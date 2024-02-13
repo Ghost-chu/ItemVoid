@@ -26,6 +26,9 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 public final class ItemVoid extends JavaPlugin {
     private static Set<InventoryType> COMPLEX_SEARCH_INVENTORY = ImmutableSet.of(InventoryType.CHEST);
@@ -58,7 +61,7 @@ public final class ItemVoid extends JavaPlugin {
                 save = 1500;
             }
             itemVoidManager.pollItems(save).thenAccept(bakedVoidItems -> databaseManager.getDatabaseHelper().saveItems(bakedVoidItems).join());
-        }, 5 * new Random().nextInt(30), 20);
+        }, 0, 60);
     }
 
     public DatabaseManager getDatabaseManager() {
@@ -68,7 +71,13 @@ public final class ItemVoid extends JavaPlugin {
     @Override
     public void onDisable() {
         // Plugin shutdown logic
-        itemVoidManager.pollItems(-1).thenAccept(bakedVoidItems -> databaseManager.getDatabaseHelper().saveItems(bakedVoidItems).join());
+        itemVoidManager.pollItems(-1).thenAccept(bakedVoidItems -> {
+            try {
+                databaseManager.getDatabaseHelper().saveItems(bakedVoidItems).get(5, TimeUnit.SECONDS);
+            } catch (InterruptedException | ExecutionException | TimeoutException e) {
+                e.printStackTrace();
+            }
+        });
     }
 
     public ItemVoidManager getItemVoidManager() {

@@ -1,12 +1,14 @@
 package com.ghostchu.plugins.itemvoid.item;
 
+import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.BlockStateMeta;
 import org.bukkit.inventory.meta.ItemMeta;
 
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Deque;
-import java.util.List;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentLinkedDeque;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -44,7 +46,7 @@ public class ItemVoidManager implements AutoCloseable {
             } else {
                 n = amount;
             }
-            List<BakedVoidItem> pool = new ArrayList<>(n);
+            Set<BakedVoidItem> pool = new HashSet<>(n);
             int counter = 0;
 
             while (counter < n) {
@@ -52,21 +54,55 @@ public class ItemVoidManager implements AutoCloseable {
                 if (voidItem == null) {
                     break;
                 }
-                if (voidItem.getItemStack().getAmount() < 1) {
-                    continue;
-                }
-                if (voidItem.getItemStack().getType().isAir()) {
-                    continue;
-                }
-                ItemMeta meta = voidItem.getItemStack().getItemMeta();
-                if (meta.hasCustomModelData() || meta.hasDisplayName() || meta.hasLore()) {
+                if (isCollectItem(voidItem.getItemStack())) {
                     counter++;
                     pool.add(new BakedVoidItem(voidItem));
                 }
+                Collection<BakedVoidItem> stacks = parsePossibleExtraContent(voidItem.getItemStack().getItemMeta()).stream().map(item -> new BakedVoidItem(voidItem.getDiscoverAt(), item)).toList();
+                counter += stacks.size();
+                pool.addAll(stacks);
             }
 
             return pool;
         });
+    }
+
+    private boolean isCollectItem(ItemStack stack) {
+        if (stack == null) {
+            return false;
+        }
+        if (stack.getAmount() < 1) {
+            return false;
+        }
+        if (stack.getType().isAir()) {
+            return false;
+        }
+        if (!stack.hasItemMeta()) {
+            return false;
+        }
+        ItemMeta meta = stack.getItemMeta();
+        return meta.hasCustomModelData() || meta.hasDisplayName() || meta.hasLore();
+    }
+
+    private Collection<ItemStack> parsePossibleExtraContent(ItemMeta meta) {
+        try {
+            Set<ItemStack> set = new HashSet<>();
+            if (meta instanceof BlockStateMeta im) {
+                if (im.getBlockState() instanceof InventoryHolder holder) {
+                    for (ItemStack content : holder.getInventory().getContents()) {
+                        if (content.hasItemMeta()) {
+                            set.addAll(parsePossibleExtraContent(content.getItemMeta()));
+                        } else {
+                            set.add(content);
+                        }
+                    }
+                }
+            }
+            return set;
+        } catch (StackOverflowError error) {
+            error.printStackTrace();
+            return Set.of();
+        }
     }
 
     @Override
