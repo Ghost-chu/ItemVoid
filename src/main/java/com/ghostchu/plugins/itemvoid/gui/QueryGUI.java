@@ -9,6 +9,7 @@ import com.github.stefvanschie.inventoryframework.pane.StaticPane;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
+import org.bukkit.Sound;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Event;
 import org.bukkit.event.inventory.InventoryClickEvent;
@@ -68,7 +69,13 @@ public class QueryGUI {
             return;
         }
         for (DatabaseItem record : this.queryResult) {
-            body.addItem(new GuiItem(record.getItemStack()));
+            body.addItem(new GuiItem(record.getItemStack(),(event)->{
+                event.setResult(Event.Result.DENY);
+                event.setCancelled(true);
+                player.getInventory().addItem(record.getItemStack());
+                player.playSound(player, Sound.UI_BUTTON_CLICK, 1F,1F);
+                player.sendMessage("已添加到物品栏（如果没加上，请检查背包空间）");
+            }));
         }
     }
 
