@@ -18,7 +18,7 @@ ItemVoid 会在收集服务器上的各种各样的特殊物品（带有自定�
 
 <img width="813" alt="3246aeceaa51c96baed42e69756c4f0c" src="https://github.com/RIA-AED/ItemVoid/assets/30802565/8f5e5caf-43ba-424d-8d11-3ced40f0965c">  
 
-<img width="813" alt="3246aeceaa51c96baed42e69756c4f0c" src="[https://github.com/RIA-AED/ItemVoid/assets/30802565/8f5e5caf-43ba-424d-8d11-3ced40f0965c](https://github.com/RIA-AED/ItemVoid/assets/30802565/6c1bd269-33b6-4011-9605-99e43911c05a)">  
+<img width="813" alt="3246aeceaa51c96baed42e69756c4f0c" src="https://github.com/RIA-AED/ItemVoid/assets/30802565/6c1bd269-33b6-4011-9605-99e43911c05a">  
 
 ## 使用方法
 
