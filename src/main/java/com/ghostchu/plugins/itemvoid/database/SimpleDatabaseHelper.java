@@ -1,13 +1,16 @@
 package com.ghostchu.plugins.itemvoid.database;
 
 import cc.carm.lib.easysql.api.SQLManager;
+import cc.carm.lib.easysql.api.SQLQuery;
 import com.ghostchu.plugins.itemvoid.item.BakedVoidItem;
+import com.ghostchu.plugins.itemvoid.item.DatabaseItem;
+import org.bukkit.configuration.InvalidConfigurationException;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.SQLException;
-import java.sql.Timestamp;
+import java.sql.*;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
+import java.util.concurrent.CompletableFuture;
 
 public class SimpleDatabaseHelper {
     private final SQLManager sqlManager;
@@ -23,26 +26,185 @@ public class SimpleDatabaseHelper {
         DataTables.initializeTables(sqlManager, prefix);
     }
 
-    public long[] saveItems(Collection<BakedVoidItem> items) {
-        String SQL = "INSERT IGNORE INTO " + DataTables.ITEMS.getName() + " VALUES (?, ?, ?, ?, ?, ?, ?)";
-        //SQL = "INSERT INTO " + DataTables.ITEMS.getName() + " (discover_at, hash_sha256, material, name, lore, nbt, bukkit_yaml) VALUES (?, ?, ?, ?, ?, ?, ?) ON DUPLICATE KEY UPDATE hash_sha256=values(hash_sha256)";
-        try (Connection connection = sqlManager.getConnection()) {
-            for (BakedVoidItem voidItem : items) {
-                try (PreparedStatement preparedStatement = connection.prepareStatement(SQL)) {
-                    preparedStatement.setLong(1, voidItem.getSha256());
-                    preparedStatement.setTimestamp(2, new Timestamp(voidItem.getDiscoverAt()));
-                    preparedStatement.setString(3, voidItem.getMaterial());
-                    preparedStatement.setString(4, voidItem.getName());
-                    preparedStatement.setString(5, voidItem.getLore());
-                    preparedStatement.setString(6, voidItem.getNbt());
-                    preparedStatement.setString(7, voidItem.getBukkitSerialized());
-                    preparedStatement.executeUpdate();
+    public CompletableFuture<long[]> saveItems(Collection<BakedVoidItem> items) {
+        return CompletableFuture.supplyAsync(() -> {
+            String SQL = "INSERT IGNORE INTO " + DataTables.ITEMS.getName() + " VALUES (?, ?, ?, ?, ?, ?, ?)";
+            //SQL = "INSERT INTO " + DataTables.ITEMS.getName() + " (discover_at, hash_sha256, material, name, lore, nbt, bukkit_yaml) VALUES (?, ?, ?, ?, ?, ?, ?) ON DUPLICATE KEY UPDATE hash_sha256=values(hash_sha256)";
+            try (Connection connection = sqlManager.getConnection()) {
+                for (BakedVoidItem voidItem : items) {
+                    try (PreparedStatement preparedStatement = connection.prepareStatement(SQL)) {
+                        preparedStatement.setLong(1, voidItem.getSha256());
+                        preparedStatement.setTimestamp(2, new Timestamp(voidItem.getDiscoverAt()));
+                        preparedStatement.setString(3, voidItem.getMaterial());
+                        preparedStatement.setString(4, voidItem.getName());
+                        preparedStatement.setString(5, voidItem.getLore());
+                        preparedStatement.setString(6, voidItem.getNbt());
+                        preparedStatement.setString(7, voidItem.getBukkitSerialized());
+                        preparedStatement.executeUpdate();
+                    }
                 }
+            } catch (SQLException e) {
+                e.printStackTrace();
             }
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-        return new long[0];
+            return new long[0];
+        });
+    }
+
+    public CompletableFuture<Collection<DatabaseItem>> queryByName(String keyword, int page, int pageSize) {
+        return CompletableFuture.supplyAsync(() -> {
+            List<DatabaseItem> stackList = new ArrayList<>();
+            try (SQLQuery query = DataTables.ITEMS.createQuery()
+                    .addCondition("name", "LIKE", "%" + keyword + "%")
+                    .orderBy("discover_at", false)
+                    .setPageLimit((page - 1) * pageSize, pageSize)
+                    .build().execute();
+                 ResultSet set = query.getResultSet()) {
+                while (set.next()) {
+                    try {
+                        long hashSha256 = set.getLong("hash_sha256");
+                        Timestamp discoverAt = set.getTimestamp("discover_at");
+                        String material = set.getString("material");
+                        String name = set.getString("name");
+                        String lore = set.getString("lore");
+                        String nbt = set.getString("nbt");
+                        String bukkitYaml = set.getString("bukkit_yaml");
+                        stackList.add(new DatabaseItem(discoverAt.getTime(), hashSha256, name, lore, nbt, bukkitYaml, material));
+                    } catch (InvalidConfigurationException e) {
+                        e.printStackTrace();
+                    }
+                }
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+            return stackList;
+        });
+    }
+
+    public CompletableFuture<Collection<DatabaseItem>> queryByLore(String keyword, int page, int pageSize) {
+        return CompletableFuture.supplyAsync(() -> {
+            List<DatabaseItem> stackList = new ArrayList<>();
+            try (SQLQuery query = DataTables.ITEMS.createQuery()
+                    .addCondition("lore", "LIKE", "%" + keyword + "%")
+                    .orderBy("discover_at", false)
+                    .setPageLimit((page - 1) * pageSize, pageSize)
+                    .build().execute();
+                 ResultSet set = query.getResultSet()) {
+                while (set.next()) {
+                    try {
+                        long hashSha256 = set.getLong("hash_sha256");
+                        Timestamp discoverAt = set.getTimestamp("discover_at");
+                        String material = set.getString("material");
+                        String name = set.getString("name");
+                        String lore = set.getString("lore");
+                        String nbt = set.getString("nbt");
+                        String bukkitYaml = set.getString("bukkit_yaml");
+                        stackList.add(new DatabaseItem(discoverAt.getTime(), hashSha256, name, lore, nbt, bukkitYaml, material));
+                    } catch (InvalidConfigurationException e) {
+                        e.printStackTrace();
+                    }
+                }
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+            return stackList;
+        });
+    }
+
+
+    public CompletableFuture<Collection<DatabaseItem>> queryByNameFullText(String keyword, int page, int pageSize) {
+        return CompletableFuture.supplyAsync(() -> {
+            List<DatabaseItem> stackList = new ArrayList<>();
+            int startPos = (pageSize - 1) * pageSize;
+            String SQL = "SELECT * FROM " + DataTables.ITEMS.getName() + " WHERE MATCH (`name`) AGAINST (?) ORDER BY `discover_at` DESC LIMIT " + startPos + "," + pageSize;
+            try (Connection connection = sqlManager.getConnection()) {
+                try (PreparedStatement preparedStatement = connection.prepareStatement(SQL)) {
+                    preparedStatement.setString(1, keyword);
+                    try (ResultSet set = preparedStatement.executeQuery()) {
+                        while (set.next()) {
+                            try {
+                                long hashSha256 = set.getLong("hash_sha256");
+                                Timestamp discoverAt = set.getTimestamp("discover_at");
+                                String material = set.getString("material");
+                                String name = set.getString("name");
+                                String lore = set.getString("lore");
+                                String nbt = set.getString("nbt");
+                                String bukkitYaml = set.getString("bukkit_yaml");
+                                stackList.add(new DatabaseItem(discoverAt.getTime(), hashSha256, name, lore, nbt, bukkitYaml, material));
+                            } catch (InvalidConfigurationException e) {
+                                e.printStackTrace();
+                            }
+                        }
+                    }
+                }
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+            return stackList;
+        });
+    }
+
+    public CompletableFuture<Collection<DatabaseItem>> queryByEverythingFullText(String keyword, int page, int pageSize) {
+        return CompletableFuture.supplyAsync(() -> {
+            List<DatabaseItem> stackList = new ArrayList<>();
+            int startPos = (pageSize - 1) * pageSize;
+            String SQL = "SELECT * FROM " + DataTables.ITEMS.getName() + " WHERE MATCH (`title`, `lore`) AGAINST (?) ORDER BY `discover_at` DESC LIMIT " + startPos + "," + pageSize;
+            try (Connection connection = sqlManager.getConnection()) {
+                try (PreparedStatement preparedStatement = connection.prepareStatement(SQL)) {
+                    preparedStatement.setString(1, keyword);
+                    try (ResultSet set = preparedStatement.executeQuery()) {
+                        while (set.next()) {
+                            try {
+                                long hashSha256 = set.getLong("hash_sha256");
+                                Timestamp discoverAt = set.getTimestamp("discover_at");
+                                String material = set.getString("material");
+                                String name = set.getString("name");
+                                String lore = set.getString("lore");
+                                String nbt = set.getString("nbt");
+                                String bukkitYaml = set.getString("bukkit_yaml");
+                                stackList.add(new DatabaseItem(discoverAt.getTime(), hashSha256, name, lore, nbt, bukkitYaml, material));
+                            } catch (InvalidConfigurationException e) {
+                                e.printStackTrace();
+                            }
+                        }
+                    }
+                }
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+            return stackList;
+        });
+    }
+
+    public CompletableFuture<Collection<DatabaseItem>> queryByLoreFullText(String keyword, int page, int pageSize) {
+        return CompletableFuture.supplyAsync(() -> {
+            List<DatabaseItem> stackList = new ArrayList<>();
+            int startPos = (pageSize - 1) * pageSize;
+            String SQL = "SELECT * FROM " + DataTables.ITEMS.getName() + " WHERE MATCH (`lore`) AGAINST (?) ORDER BY `discover_at` DESC LIMIT " + startPos + "," + pageSize;
+            try (Connection connection = sqlManager.getConnection()) {
+                try (PreparedStatement preparedStatement = connection.prepareStatement(SQL)) {
+                    preparedStatement.setString(1, keyword);
+                    try (ResultSet set = preparedStatement.executeQuery()) {
+                        while (set.next()) {
+                            try {
+                                long hashSha256 = set.getLong("hash_sha256");
+                                Timestamp discoverAt = set.getTimestamp("discover_at");
+                                String material = set.getString("material");
+                                String name = set.getString("name");
+                                String lore = set.getString("lore");
+                                String nbt = set.getString("nbt");
+                                String bukkitYaml = set.getString("bukkit_yaml");
+                                stackList.add(new DatabaseItem(discoverAt.getTime(), hashSha256, name, lore, nbt, bukkitYaml, material));
+                            } catch (InvalidConfigurationException e) {
+                                e.printStackTrace();
+                            }
+                        }
+                    }
+                }
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+            return stackList;
+        });
     }
 
 }

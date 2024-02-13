@@ -1,6 +1,8 @@
 package com.ghostchu.plugins.itemvoid;
 
 import com.ghostchu.plugins.itemvoid.database.DatabaseManager;
+import com.ghostchu.plugins.itemvoid.gui.QueryGUI;
+import com.ghostchu.plugins.itemvoid.gui.QueryMode;
 import com.ghostchu.plugins.itemvoid.item.ItemVoidManager;
 import com.ghostchu.plugins.itemvoid.listener.InventoryListener;
 import com.google.common.collect.ImmutableSet;
@@ -21,15 +23,17 @@ import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
-import java.util.Random;
-import java.util.Set;
+import java.util.*;
 
 public final class ItemVoid extends JavaPlugin {
     private static Set<InventoryType> COMPLEX_SEARCH_INVENTORY = ImmutableSet.of(InventoryType.CHEST);
     private DatabaseManager databaseManager;
     private ItemVoidManager itemVoidManager;
     private Random RANDOM = new Random();
+
+
 
     @Override
     public void onEnable() {
@@ -50,14 +54,18 @@ public final class ItemVoid extends JavaPlugin {
                     return;
                 }
             }
-            itemVoidManager.pollItems(1200).thenAccept(bakedVoidItems -> databaseManager.getDatabaseHelper().saveItems(bakedVoidItems));
+            itemVoidManager.pollItems(1200).thenAccept(bakedVoidItems -> databaseManager.getDatabaseHelper().saveItems(bakedVoidItems).join());
         }, 5 * new Random().nextInt(30), 20);
+    }
+
+    public DatabaseManager getDatabaseManager() {
+        return databaseManager;
     }
 
     @Override
     public void onDisable() {
         // Plugin shutdown logic
-        itemVoidManager.pollItems(-1).thenAccept(bakedVoidItems -> databaseManager.getDatabaseHelper().saveItems(bakedVoidItems));
+        itemVoidManager.pollItems(-1).thenAccept(bakedVoidItems -> databaseManager.getDatabaseHelper().saveItems(bakedVoidItems).join());
     }
 
     public ItemVoidManager getItemVoidManager() {
@@ -151,9 +159,101 @@ public final class ItemVoid extends JavaPlugin {
 
     @Override
     public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String[] args) {
-        Bukkit.getScheduler().runTaskAsynchronously(this, () -> {
-            sender.sendMessage("Insert queue: " + itemVoidManager.getINSERT_QUEUE().size());
-        });
+        if (!sender.hasPermission("itemvoid.use")) {
+            return false;
+        }
+        if (args.length < 1) {
+            sender.sendMessage("请给定一个查询参数：queryName, queryLore, status");
+            return false;
+        }
+        switch (args[0].toLowerCase(Locale.ROOT)) {
+            case "queryname" -> {
+                if (args.length < 2) {
+                    sender.sendMessage("请给定一个查询关键字，不支持空格");
+                    return true;
+                }
+                if (!(sender instanceof Player player)) {
+                    sender.sendMessage("只有玩家可使用此命令");
+                    return true;
+                }
+                QueryGUI queryGUI = new QueryGUI(this, player, args[1], QueryMode.QUERY_NAME);
+                queryGUI.open();
+            }
+            case "querylore" -> {
+                if (args.length < 2) {
+                    sender.sendMessage("请给定一个查询关键字，不支持空格");
+                    return true;
+                }
+                if (!(sender instanceof Player player)) {
+                    sender.sendMessage("只有玩家可使用此命令");
+                    return true;
+                }
+                QueryGUI queryGUI = new QueryGUI(this, player, args[1], QueryMode.QUERY_LORE);
+                queryGUI.open();
+            }
+            case "querynamefulltext" -> {
+                if (args.length < 2) {
+                    sender.sendMessage("请给定一个查询关键字，不支持空格");
+                    return true;
+                }
+                if (!(sender instanceof Player player)) {
+                    sender.sendMessage("只有玩家可使用此命令");
+                    return true;
+                }
+                if(args[1].length() < 4){
+                    sender.sendMessage("错误：使用全文索引查找时，不得少于 4 个字符");
+                    return true;
+                }
+                QueryGUI queryGUI = new QueryGUI(this, player, args[1], QueryMode.QUERY_NAME_FULLTEXT);
+                queryGUI.open();
+            }
+            case "querylorefulltext" -> {
+                if (args.length < 2) {
+                    sender.sendMessage("请给定一个查询关键字，不支持空格");
+                    return true;
+                }
+                if (!(sender instanceof Player player)) {
+                    sender.sendMessage("只有玩家可使用此命令");
+                    return true;
+                }
+                if(args[1].length() < 4){
+                    sender.sendMessage("错误：使用全文索引查找时，不得少于 4 个字符");
+                    return true;
+                }
+                QueryGUI queryGUI = new QueryGUI(this, player, args[1], QueryMode.QUERY_LORE_FULLTEXT);
+                queryGUI.open();
+            }
+            case "queryeverythingfulltext" -> {
+                if (args.length < 2) {
+                    sender.sendMessage("请给定一个查询关键字，不支持空格");
+                    return true;
+                }
+                if (!(sender instanceof Player player)) {
+                    sender.sendMessage("只有玩家可使用此命令");
+                    return true;
+                }
+                if(args[1].length() < 4){
+                    sender.sendMessage("错误：使用全文索引查找时，不得少于 4 个字符");
+                    return true;
+                }
+                QueryGUI queryGUI = new QueryGUI(this, player, args[1], QueryMode.QUERY_EVERYTHING_FULLTEXT);
+                queryGUI.open();
+            }
+
+            case "status" -> sender.sendMessage("Insert queue: " + getItemVoidManager().getINSERT_QUEUE().size());
+        }
         return true;
+    }
+
+    @Nullable
+    @Override
+    public List<String> onTabComplete(@NotNull CommandSender sender, @NotNull Command command, @NotNull String alias, @NotNull String[] args) {
+        if (args.length < 2) {
+            return List.of("queryName", "queryLore","queryNameFullText", "queryLoreFullText", "queryEverything", "status");
+        }
+        if (args.length == 3) {
+            return List.of("<查询关键字，不支持空格>");
+        }
+        return Collections.emptyList();
     }
 }

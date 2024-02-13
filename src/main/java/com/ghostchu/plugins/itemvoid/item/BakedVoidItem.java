@@ -31,6 +31,7 @@ public class BakedVoidItem extends AbstractVoidItem {
         calcHash();
     }
 
+
     private void readItemStack() {
         this.name = "<NULL-NULL-NULL>"; // 不给数据库 NULL 值，影响索引
         this.lore = "<NULL-NULL-NULL>"; // 不给数据库 NULL 值，影响索引
