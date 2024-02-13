@@ -1,5 +1,6 @@
 package com.ghostchu.plugins.itemvoid;
 
+import cc.carm.lib.easysql.EasySQL;
 import com.ghostchu.plugins.itemvoid.database.DatabaseManager;
 import com.ghostchu.plugins.itemvoid.gui.QueryGUI;
 import com.ghostchu.plugins.itemvoid.gui.QueryMode;
@@ -29,12 +30,15 @@ import java.util.*;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 
 public final class ItemVoid extends JavaPlugin {
     private static Set<InventoryType> COMPLEX_SEARCH_INVENTORY = ImmutableSet.of(InventoryType.CHEST);
     private DatabaseManager databaseManager;
     private ItemVoidManager itemVoidManager;
     private Random RANDOM = new Random();
+    private Lock LOCK = new ReentrantLock();
 
 
     @Override
@@ -51,17 +55,28 @@ public final class ItemVoid extends JavaPlugin {
 //        });
         Bukkit.getScheduler().runTaskTimerAsynchronously(this, () -> {
             int count = itemVoidManager.getINSERT_QUEUE().size();
-            if (count < 150) {
-                if (RANDOM.nextBoolean()) {
+            if (count < 500) {
+                if (RANDOM.nextInt() != 0) {
                     return;
                 }
             }
             int save = count / 3;
-            if (save < 1500) {
-                save = 1500;
+            if (save < 5500) {
+                save = 5500;
             }
-            itemVoidManager.pollItems(save).thenAccept(bakedVoidItems -> databaseManager.getDatabaseHelper().saveItems(bakedVoidItems).join());
-        }, 0, 60);
+            try {
+                if (!LOCK.tryLock()) {
+                    return;
+                }
+                itemVoidManager.pollItems(save)
+                        .thenAccept(bakedVoidItems -> databaseManager.getDatabaseHelper().saveItems(bakedVoidItems).join())
+                        .join();
+            } catch (Throwable throwable) {
+                throwable.printStackTrace();
+            } finally {
+                LOCK.unlock();
+            }
+        }, 1, 60);
     }
 
     public DatabaseManager getDatabaseManager() {
@@ -78,6 +93,7 @@ public final class ItemVoid extends JavaPlugin {
                 e.printStackTrace();
             }
         });
+        EasySQL.shutdownManager(getDatabaseManager().getSqlManager());
     }
 
     public ItemVoidManager getItemVoidManager() {
@@ -250,6 +266,21 @@ public final class ItemVoid extends JavaPlugin {
                 }
                 QueryGUI queryGUI = new QueryGUI(this, player, args[1], QueryMode.QUERY_EVERYTHING_FULLTEXT);
                 queryGUI.open();
+            }
+            case "forcesaveall" -> {
+                try{
+                    if(!LOCK.tryLock()){
+                        sender.sendMessage("已经有一个保存任务在进行中了！");
+                        return true;
+                    }
+                    itemVoidManager.pollItems(-1)
+                            .thenAccept(bakedVoidItems -> databaseManager.getDatabaseHelper().saveItems(bakedVoidItems)
+                                    .thenAccept((e) -> sender.sendMessage("保存完成！ long[] = " + e.length)));
+                }catch (Throwable throwable){
+                    throwable.printStackTrace();
+                }finally {
+                    LOCK.unlock();
+                }
             }
 
             case "status" -> sender.sendMessage("Insert queue: " + getItemVoidManager().getINSERT_QUEUE().size());

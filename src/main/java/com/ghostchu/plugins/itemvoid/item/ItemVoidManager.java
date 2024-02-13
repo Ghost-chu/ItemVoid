@@ -44,24 +44,16 @@ public class ItemVoidManager implements AutoCloseable {
             } else {
                 n = amount;
             }
-            Set<BakedVoidItem> pool = new HashSet<>(n);
-            int counter = 0;
-
-            while (counter < n) {
-                VoidItem voidItem = INSERT_QUEUE.pollFirst();
+            List<VoidItem> rawPool = new ArrayList<>();
+            for (int i = 0; i < n; i++) {
+                VoidItem voidItem = INSERT_QUEUE.poll();
                 if (voidItem == null) {
                     break;
                 }
-                if (isCollectItem(voidItem.getItemStack())) {
-                    counter++;
-                    pool.add(new BakedVoidItem(voidItem));
-                }
-                Collection<BakedVoidItem> stacks = parsePossibleExtraContent(voidItem.getItemStack().getItemMeta(),0).stream().map(item -> new BakedVoidItem(voidItem.getDiscoverAt(), item)).toList();
-                counter += stacks.size();
-                pool.addAll(stacks);
+                rawPool.add(voidItem);
+                rawPool.addAll(parsePossibleExtraContent(voidItem.getItemStack().getItemMeta(), 0).stream().map(item -> new RawVoidItem(voidItem.getDiscoverAt(), item)).toList());
             }
-
-            return pool;
+            return rawPool.parallelStream().filter(item -> isCollectItem(item.getItemStack())).map(BakedVoidItem::new).toList();
         });
     }
 
@@ -91,6 +83,7 @@ public class ItemVoidManager implements AutoCloseable {
             if (meta instanceof BlockStateMeta im) {
                 if (im.getBlockState() instanceof InventoryHolder holder) {
                     for (ItemStack content : holder.getInventory().getContents()) {
+                        if (content == null) continue;
                         if (content.hasItemMeta()) {
                             set.addAll(parsePossibleExtraContent(content.getItemMeta(), depth + 1));
                         } else {

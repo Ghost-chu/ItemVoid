@@ -6,4 +6,5 @@ public class RawVoidItem extends AbstractVoidItem{
     public RawVoidItem(long discoverTime, ItemStack stack) {
         super(discoverTime, stack);
     }
+
 }

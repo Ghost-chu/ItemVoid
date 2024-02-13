@@ -9,6 +9,7 @@ import org.bukkit.inventory.meta.Damageable;
 import org.bukkit.inventory.meta.ItemMeta;
 
 import java.nio.charset.StandardCharsets;
+import java.util.Objects;
 import java.util.StringJoiner;
 
 public class BakedVoidItem extends AbstractVoidItem {
@@ -85,6 +86,19 @@ public class BakedVoidItem extends AbstractVoidItem {
 
     private void calcHash() {
         sha256 = Hashing.sha256().hashString(material+" "+nbt, StandardCharsets.UTF_8).padToLong();
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        BakedVoidItem that = (BakedVoidItem) o;
+        return sha256 == that.sha256 && Objects.equals(nbt, that.nbt) && Objects.equals(name, that.name) && Objects.equals(lore, that.lore) && Objects.equals(bukkitSerialized, that.bukkitSerialized) && Objects.equals(material, that.material);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(nbt, sha256, name, lore, bukkitSerialized, material);
     }
 
     private void serializeItemStack() {
