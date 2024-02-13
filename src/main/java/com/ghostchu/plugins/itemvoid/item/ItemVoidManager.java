@@ -5,10 +5,7 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.BlockStateMeta;
 import org.bukkit.inventory.meta.ItemMeta;
 
-import java.util.Collection;
-import java.util.Deque;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentLinkedDeque;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -16,6 +13,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 public class ItemVoidManager implements AutoCloseable {
     private Deque<VoidItem> INSERT_QUEUE = new ConcurrentLinkedDeque<>();
     private AtomicBoolean stopFilterThread = new AtomicBoolean(false);
+    private static int MAX_PARSE_DEPTH = 3;
 
     public ItemVoidManager() {
     }
@@ -58,7 +56,7 @@ public class ItemVoidManager implements AutoCloseable {
                     counter++;
                     pool.add(new BakedVoidItem(voidItem));
                 }
-                Collection<BakedVoidItem> stacks = parsePossibleExtraContent(voidItem.getItemStack().getItemMeta()).stream().map(item -> new BakedVoidItem(voidItem.getDiscoverAt(), item)).toList();
+                Collection<BakedVoidItem> stacks = parsePossibleExtraContent(voidItem.getItemStack().getItemMeta(),0).stream().map(item -> new BakedVoidItem(voidItem.getDiscoverAt(), item)).toList();
                 counter += stacks.size();
                 pool.addAll(stacks);
             }
@@ -84,14 +82,17 @@ public class ItemVoidManager implements AutoCloseable {
         return meta.hasCustomModelData() || meta.hasDisplayName() || meta.hasLore();
     }
 
-    private Collection<ItemStack> parsePossibleExtraContent(ItemMeta meta) {
+    private Collection<ItemStack> parsePossibleExtraContent(ItemMeta meta, int depth) {
+        if (depth > MAX_PARSE_DEPTH) {
+            return Collections.emptyList();
+        }
         try {
             Set<ItemStack> set = new HashSet<>();
             if (meta instanceof BlockStateMeta im) {
                 if (im.getBlockState() instanceof InventoryHolder holder) {
                     for (ItemStack content : holder.getInventory().getContents()) {
                         if (content.hasItemMeta()) {
-                            set.addAll(parsePossibleExtraContent(content.getItemMeta()));
+                            set.addAll(parsePossibleExtraContent(content.getItemMeta(), depth + 1));
                         } else {
                             set.add(content);
                         }
@@ -101,7 +102,7 @@ public class ItemVoidManager implements AutoCloseable {
             return set;
         } catch (StackOverflowError error) {
             error.printStackTrace();
-            return Set.of();
+            return Collections.emptyList();
         }
     }
 
