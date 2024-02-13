@@ -55,14 +55,14 @@ public final class ItemVoid extends JavaPlugin {
 //        });
         Bukkit.getScheduler().runTaskTimerAsynchronously(this, () -> {
             int count = itemVoidManager.getINSERT_QUEUE().size();
-            if (count < 500) {
+            if (count < 512) {
                 if (RANDOM.nextInt() != 0) {
                     return;
                 }
             }
             int save = count / 3;
-            if (save < 5500) {
-                save = 5500;
+            if (save < 1000) {
+                save = 1000;
             }
             try {
                 if (!LOCK.tryLock()) {
@@ -76,7 +76,7 @@ public final class ItemVoid extends JavaPlugin {
             } finally {
                 LOCK.unlock();
             }
-        }, 1, 60);
+        }, 1, 20);
     }
 
     public DatabaseManager getDatabaseManager() {
