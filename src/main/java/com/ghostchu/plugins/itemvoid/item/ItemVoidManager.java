@@ -20,10 +20,7 @@ public class ItemVoidManager implements AutoCloseable {
     public void discover(ItemStack stack) {
         if (stack == null) return;
         if (!stack.hasItemMeta()) return;
-        ItemMeta meta = stack.getItemMeta();
-        if (meta.hasDisplayName() || meta.hasLore()) {
-            INSERT_QUEUE.offer(new RawVoidItem(System.currentTimeMillis(), stack));
-        }
+        INSERT_QUEUE.offer(new RawVoidItem(System.currentTimeMillis(), stack));
     }
 
     public void discover(ItemStack... stack) {
@@ -52,7 +49,10 @@ public class ItemVoidManager implements AutoCloseable {
                 if (voidItem == null) {
                     break;
                 }
-                pool.add(new BakedVoidItem(voidItem));
+                ItemMeta meta = voidItem.getItemStack().getItemMeta();
+                if(meta.hasCustomModelData() || meta.hasDisplayName() || meta.hasLore()) {
+                    pool.add(new BakedVoidItem(voidItem));
+                }
             }
             return pool;
         });
