@@ -12,6 +12,9 @@
 ItemVoid 会在收集服务器上的各种各样的特殊物品（带有自定义名称或者Lores的），并将其存储在数据库中。  
 您可以使用命令在数据库中查找这些物品，并取出。
 
+<img width="813" alt="3246aeceaa51c96baed42e69756c4f0c" src="https://github.com/RIA-AED/ItemVoid/assets/30802565/129a4b19-d953-4169-a722-29dadfae9834">
+
+
 ## 使用方法
 
 /itemvoid queryName <名称> - 按名称搜索  
