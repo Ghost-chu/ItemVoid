@@ -7,7 +7,8 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Deque;
 import java.util.List;
-import java.util.concurrent.*;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ConcurrentLinkedDeque;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 public class ItemVoidManager implements AutoCloseable {
@@ -44,16 +45,23 @@ public class ItemVoidManager implements AutoCloseable {
                 n = amount;
             }
             List<BakedVoidItem> pool = new ArrayList<>(n);
-            for (int i = 0; i < n; i++) {
+            int counter = 0;
+
+            while (counter < n){
                 VoidItem voidItem = INSERT_QUEUE.pollFirst();
                 if (voidItem == null) {
                     break;
                 }
+                if(voidItem.getItemStack().getAmount() < 1){
+                    continue;
+                }
                 ItemMeta meta = voidItem.getItemStack().getItemMeta();
                 if(meta.hasCustomModelData() || meta.hasDisplayName() || meta.hasLore()) {
+                    counter ++;
                     pool.add(new BakedVoidItem(voidItem));
                 }
             }
+
             return pool;
         });
     }

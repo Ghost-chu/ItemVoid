@@ -31,8 +31,8 @@ public class SimpleDatabaseHelper {
             String SQL = "INSERT IGNORE INTO " + DataTables.ITEMS.getName() + " VALUES (?, ?, ?, ?, ?, ?, ?)";
             //SQL = "INSERT INTO " + DataTables.ITEMS.getName() + " (discover_at, hash_sha256, material, name, lore, nbt, bukkit_yaml) VALUES (?, ?, ?, ?, ?, ?, ?) ON DUPLICATE KEY UPDATE hash_sha256=values(hash_sha256)";
             try (Connection connection = sqlManager.getConnection()) {
-                for (BakedVoidItem voidItem : items) {
-                    try (PreparedStatement preparedStatement = connection.prepareStatement(SQL)) {
+                try (PreparedStatement preparedStatement = connection.prepareStatement(SQL)) {
+                    for (BakedVoidItem voidItem : items) {
                         preparedStatement.setLong(1, voidItem.getSha256());
                         preparedStatement.setTimestamp(2, new Timestamp(voidItem.getDiscoverAt()));
                         preparedStatement.setString(3, voidItem.getMaterial());
@@ -40,8 +40,9 @@ public class SimpleDatabaseHelper {
                         preparedStatement.setString(5, voidItem.getLore());
                         preparedStatement.setString(6, voidItem.getNbt());
                         preparedStatement.setString(7, voidItem.getBukkitSerialized());
-                        preparedStatement.executeUpdate();
+                        preparedStatement.addBatch();
                     }
+                    preparedStatement.executeLargeBatch();
                 }
             } catch (SQLException e) {
                 e.printStackTrace();

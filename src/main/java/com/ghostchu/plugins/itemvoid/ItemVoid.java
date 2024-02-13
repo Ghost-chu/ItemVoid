@@ -34,7 +34,6 @@ public final class ItemVoid extends JavaPlugin {
     private Random RANDOM = new Random();
 
 
-
     @Override
     public void onEnable() {
         // Plugin startup logic
@@ -54,7 +53,11 @@ public final class ItemVoid extends JavaPlugin {
                     return;
                 }
             }
-            itemVoidManager.pollItems(1200).thenAccept(bakedVoidItems -> databaseManager.getDatabaseHelper().saveItems(bakedVoidItems).join());
+            int save = count / 3;
+            if (save < 1500) {
+                save = 1500;
+            }
+            itemVoidManager.pollItems(save).thenAccept(bakedVoidItems -> databaseManager.getDatabaseHelper().saveItems(bakedVoidItems).join());
         }, 5 * new Random().nextInt(30), 20);
     }
 
@@ -200,7 +203,7 @@ public final class ItemVoid extends JavaPlugin {
                     sender.sendMessage("只有玩家可使用此命令");
                     return true;
                 }
-                if(args[1].length() < 4){
+                if (args[1].length() < 4) {
                     sender.sendMessage("错误：使用全文索引查找时，不得少于 4 个字符");
                     return true;
                 }
@@ -216,7 +219,7 @@ public final class ItemVoid extends JavaPlugin {
                     sender.sendMessage("只有玩家可使用此命令");
                     return true;
                 }
-                if(args[1].length() < 4){
+                if (args[1].length() < 4) {
                     sender.sendMessage("错误：使用全文索引查找时，不得少于 4 个字符");
                     return true;
                 }
@@ -232,7 +235,7 @@ public final class ItemVoid extends JavaPlugin {
                     sender.sendMessage("只有玩家可使用此命令");
                     return true;
                 }
-                if(args[1].length() < 4){
+                if (args[1].length() < 4) {
                     sender.sendMessage("错误：使用全文索引查找时，不得少于 4 个字符");
                     return true;
                 }
@@ -249,7 +252,7 @@ public final class ItemVoid extends JavaPlugin {
     @Override
     public List<String> onTabComplete(@NotNull CommandSender sender, @NotNull Command command, @NotNull String alias, @NotNull String[] args) {
         if (args.length < 2) {
-            return List.of("queryName", "queryLore","queryNameFullText", "queryLoreFullText", "queryEverything", "status");
+            return List.of("queryName", "queryLore", "queryNameFullText", "queryLoreFullText", "queryEverything", "status");
         }
         if (args.length == 3) {
             return List.of("<查询关键字，不支持空格>");
