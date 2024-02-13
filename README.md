@@ -9,10 +9,14 @@
 
 ## 描述
 
+在 RIA，整个服务器由大量的自定义物品驱动。这些物品的数量实在是太多，即使建设了多个仓库，也相当难以查找对应物品（有时甚至会搞丢备份），这种情况下使用程序手段处理就变得十分必要。  
+
 ItemVoid 会在收集服务器上的各种各样的特殊物品（带有自定义名称或者Lores的），并将其存储在数据库中。  
 您可以使用命令在数据库中查找这些物品，并取出。
 
-<img width="813" alt="3246aeceaa51c96baed42e69756c4f0c" src="https://github.com/RIA-AED/ItemVoid/assets/30802565/129a4b19-d953-4169-a722-29dadfae9834">
+<img width="813" alt="3246aeceaa51c96baed42e69756c4f0c" src="https://github.com/RIA-AED/ItemVoid/assets/30802565/129a4b19-d953-4169-a722-29dadfae9834">  
+
+<img width="813" alt="3246aeceaa51c96baed42e69756c4f0c" src="https://github.com/RIA-AED/ItemVoid/assets/30802565/8f5e5caf-43ba-424d-8d11-3ced40f0965c">  
 
 
 ## 使用方法
