@@ -1,0 +1,9 @@
+name: ItemVoid
+version: '${project.version}'
+main: com.ghostchu.plugins.itemvoid.ItemVoid
+api-version: '1.20'
+depend:
+  - NBTAPI
+commands:
+  itemvoid:
+    description: main command

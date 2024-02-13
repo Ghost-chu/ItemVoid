@@ -1,0 +1,27 @@
+database:
+  # 使用 MySQL 存储数据，false 则直接崩溃
+  mysql: true
+  # 下面的配置应该就不用说了吧
+  host: localhost
+  port: 3306
+  database: riaitemvoid
+  user: root
+  password: passwd
+  # 表前缀
+  prefix: "riaitemvoid_"
+  # 使用 SSL
+  usessl: false
+  # 额外配置
+  properties:
+    connectionTimeout: 60000
+    idleTimeout: 10000
+    maxLifetime: 1800000
+    maximumPoolSize: 4
+    minimumIdle: 4
+    cachePrepStmts: true
+    prepStmtCacheSize: 250
+    prepStmtCacheSqlLimit: 2048
+    useUnicode: true
+    characterEncoding: utf8
+    allowPublicKeyRetrieval: true
+    keepaliveTime: 60000
