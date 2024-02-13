@@ -47,17 +47,20 @@ public class ItemVoidManager implements AutoCloseable {
             List<BakedVoidItem> pool = new ArrayList<>(n);
             int counter = 0;
 
-            while (counter < n){
+            while (counter < n) {
                 VoidItem voidItem = INSERT_QUEUE.pollFirst();
                 if (voidItem == null) {
                     break;
                 }
-                if(voidItem.getItemStack().getAmount() < 1){
+                if (voidItem.getItemStack().getAmount() < 1) {
+                    continue;
+                }
+                if (voidItem.getItemStack().getType().isAir()) {
                     continue;
                 }
                 ItemMeta meta = voidItem.getItemStack().getItemMeta();
-                if(meta.hasCustomModelData() || meta.hasDisplayName() || meta.hasLore()) {
-                    counter ++;
+                if (meta.hasCustomModelData() || meta.hasDisplayName() || meta.hasLore()) {
+                    counter++;
                     pool.add(new BakedVoidItem(voidItem));
                 }
             }
