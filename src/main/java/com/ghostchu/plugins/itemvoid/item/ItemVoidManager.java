@@ -85,9 +85,10 @@ public class ItemVoidManager implements AutoCloseable {
                     for (ItemStack content : holder.getInventory().getContents()) {
                         if (content == null) continue;
                         if (content.hasItemMeta()) {
+                            if (isCollectItem(content)) {
+                                set.add(content);
+                            }
                             set.addAll(parsePossibleExtraContent(content.getItemMeta(), depth + 1));
-                        } else {
-                            set.add(content);
                         }
                     }
                 }
