@@ -64,10 +64,10 @@ public final class ItemVoid extends JavaPlugin {
             if (save < 1000) {
                 save = 1000;
             }
+            if (!LOCK.tryLock()) {
+                return;
+            }
             try {
-                if (!LOCK.tryLock()) {
-                    return;
-                }
                 itemVoidManager.pollItems(save)
                         .thenAccept(bakedVoidItems -> databaseManager.getDatabaseHelper().saveItems(bakedVoidItems).join())
                         .join();
