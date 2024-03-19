@@ -219,22 +219,6 @@ public final class ItemVoid extends JavaPlugin {
                 QueryGUI queryGUI = new QueryGUI(this, player, args[1], QueryMode.QUERY_LORE);
                 queryGUI.open();
             }
-            case "querynamefulltext" -> {
-                if (args.length < 2) {
-                    sender.sendMessage("请给定一个查询关键字，不支持空格");
-                    return true;
-                }
-                if (!(sender instanceof Player player)) {
-                    sender.sendMessage("只有玩家可使用此命令");
-                    return true;
-                }
-                if (args[1].length() < 4) {
-                    sender.sendMessage("错误：使用全文索引查找时，不得少于 4 个字符");
-                    return true;
-                }
-                QueryGUI queryGUI = new QueryGUI(this, player, args[1], QueryMode.QUERY_NAME_FULLTEXT);
-                queryGUI.open();
-            }
             case "querylorefulltext" -> {
                 if (args.length < 2) {
                     sender.sendMessage("请给定一个查询关键字，不支持空格");
@@ -249,22 +233,6 @@ public final class ItemVoid extends JavaPlugin {
                     return true;
                 }
                 QueryGUI queryGUI = new QueryGUI(this, player, args[1], QueryMode.QUERY_LORE_FULLTEXT);
-                queryGUI.open();
-            }
-            case "queryeverythingfulltext" -> {
-                if (args.length < 2) {
-                    sender.sendMessage("请给定一个查询关键字，不支持空格");
-                    return true;
-                }
-                if (!(sender instanceof Player player)) {
-                    sender.sendMessage("只有玩家可使用此命令");
-                    return true;
-                }
-                if (args[1].length() < 4) {
-                    sender.sendMessage("错误：使用全文索引查找时，不得少于 4 个字符");
-                    return true;
-                }
-                QueryGUI queryGUI = new QueryGUI(this, player, args[1], QueryMode.QUERY_EVERYTHING_FULLTEXT);
                 queryGUI.open();
             }
             case "forcesaveall" -> {
