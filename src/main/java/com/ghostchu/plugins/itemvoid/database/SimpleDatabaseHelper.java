@@ -14,6 +14,7 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.TimeUnit;
 
 public class SimpleDatabaseHelper {
     private final SQLManager sqlManager;
@@ -21,6 +22,7 @@ public class SimpleDatabaseHelper {
     private final Cache<Long, Object> itemDuplicateCache = CacheBuilder.newBuilder()
             .initialCapacity(3000) // 由于缓存会以相当快的速度被填满，因此使初始容量匹配最大容量以避免扩展大小引发的性能开销
             .maximumSize(3000)
+            .expireAfterAccess(1, TimeUnit.HOURS)
             .weakValues()
             .build();
     private final Object cachePlaceHolder = new Object();
