@@ -48,11 +48,6 @@ public final class ItemVoid extends JavaPlugin {
         this.itemVoidManager = new ItemVoidManager();
         Bukkit.getPluginManager().registerEvents(new InventoryListener(this), this);
         Bukkit.getOnlinePlayers().forEach(this::collectFromEntity);
-//        Bukkit.getWorlds().forEach(w -> {
-//            for (Chunk loadedChunk : w.getLoadedChunks()) {
-//                collectFromChunk(loadedChunk);
-//            }
-//        });
         Bukkit.getScheduler().runTaskTimerAsynchronously(this, () -> {
             int count = itemVoidManager.getINSERT_QUEUE().size();
             if (count < 512) {

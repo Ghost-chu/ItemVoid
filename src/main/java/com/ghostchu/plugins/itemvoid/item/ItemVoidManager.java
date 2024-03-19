@@ -101,7 +101,7 @@ public class ItemVoidManager implements AutoCloseable {
     }
 
     @Override
-    public void close() throws Exception {
+    public void close() {
         stopFilterThread.set(true);
     }
 
