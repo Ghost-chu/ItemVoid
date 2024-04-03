@@ -9,8 +9,6 @@ import com.ghostchu.plugins.itemvoid.listener.InventoryListener;
 import com.google.common.collect.ImmutableSet;
 import org.bukkit.Bukkit;
 import org.bukkit.Chunk;
-import org.bukkit.Location;
-import org.bukkit.block.Block;
 import org.bukkit.block.BlockState;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
@@ -129,19 +127,9 @@ public final class ItemVoid extends JavaPlugin {
             return;
         }
         ItemStack[] stacks = inventory.getContents();
-        Block block = getInventoryBlockOrNull(inventory);
-        if (block == null) {
-            return;
+        if(inventory.getHolder() != null) {
+            itemVoidManager.discover(stacks);
         }
-        itemVoidManager.discover(stacks);
-    }
-
-    private Block getInventoryBlockOrNull(Inventory inventory) {
-        Location inventoryLoc = inventory.getLocation();
-        if (inventoryLoc != null) {
-            return inventoryLoc.getBlock();
-        }
-        return null;
     }
 
     @Override
