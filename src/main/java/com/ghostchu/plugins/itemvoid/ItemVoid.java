@@ -12,7 +12,6 @@ import org.bukkit.Chunk;
 import org.bukkit.Location;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockState;
-import org.bukkit.block.DoubleChest;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Entity;
@@ -138,44 +137,9 @@ public final class ItemVoid extends JavaPlugin {
     }
 
     private Block getInventoryBlockOrNull(Inventory inventory) {
-        // Performs a fast Block object fetch for containers with only a single block, avoiding the need to fetch a
-        // BlockState. When creating a BlockState Spigot will create a snapshot, which is a rather slow process.
-
-        if (!COMPLEX_SEARCH_INVENTORY.contains(inventory.getType())) {
-            Location inventoryLoc = inventory.getLocation();
-            if (inventoryLoc != null) {
-                return inventoryLoc.getBlock();
-            }
-            return null; // Custom GUI
-        }
-
-        // Complex search trick for Single Chest
-        // If this is a single chest, we can do same fast fetch just like above
-        if (inventory.getType() == InventoryType.CHEST) {
-            Location inventoryLoc = inventory.getLocation();
-            if (inventoryLoc != null) {
-                Location invBlockLoc = inventoryLoc.clone();
-                invBlockLoc.setX(inventoryLoc.getBlockX());
-                invBlockLoc.setY(inventoryLoc.getBlockY());
-                invBlockLoc.setZ(inventoryLoc.getBlockZ());
-                // If the two Locations are the same, it means it is not a double chest;
-                // The DoubleChest inventory location is similar like 94.5 64 88.5 (.5)
-                if (inventoryLoc.equals(invBlockLoc)) {
-                    return inventoryLoc.getBlock();
-                }
-            }
-        }
-
-        // We've exhausted our means, and now we'll have to use the slowest method just like before.
-        InventoryHolder holder = inventory.getHolder();
-        if (holder instanceof BlockState) {
-            return ((BlockState) holder).getBlock();
-        }
-        if (holder instanceof DoubleChest) {
-            InventoryHolder leftHolder = ((DoubleChest) holder).getLeftSide();
-            if (leftHolder instanceof BlockState) {
-                return ((BlockState) leftHolder).getBlock();
-            }
+        Location inventoryLoc = inventory.getLocation();
+        if (inventoryLoc != null) {
+            return inventoryLoc.getBlock();
         }
         return null;
     }
