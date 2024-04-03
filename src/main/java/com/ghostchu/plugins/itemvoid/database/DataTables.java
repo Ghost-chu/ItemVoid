@@ -25,7 +25,6 @@ public enum DataTables {
         table.addColumn("bukkit_yaml", "LONGTEXT NOT NULL");
         table.setIndex(IndexType.INDEX, "itemvoid_idx_discover_time", "discover_at");
         table.setIndex(IndexType.INDEX, "itemvoid_idx_name", "name");
-        table.setIndex(IndexType.FULLTEXT_INDEX, "itemvoid_idx_lore", "lore");
     });
 
     private final @NotNull String name;

@@ -37,27 +37,28 @@ public final class ItemVoid extends JavaPlugin {
     private static Set<InventoryType> COMPLEX_SEARCH_INVENTORY = ImmutableSet.of(InventoryType.CHEST);
     private DatabaseManager databaseManager;
     private ItemVoidManager itemVoidManager;
-    private Random RANDOM = new Random();
-    private Lock LOCK = new ReentrantLock();
+    private final Random RANDOM = new Random();
+    private final Lock LOCK = new ReentrantLock();
 
 
     @Override
     public void onEnable() {
         // Plugin startup logic
+        saveDefaultConfig();
         this.databaseManager = new DatabaseManager(this);
-        this.itemVoidManager = new ItemVoidManager();
+        this.itemVoidManager = new ItemVoidManager(this);
         Bukkit.getPluginManager().registerEvents(new InventoryListener(this), this);
         Bukkit.getOnlinePlayers().forEach(this::collectFromEntity);
         Bukkit.getScheduler().runTaskTimerAsynchronously(this, () -> {
             int count = itemVoidManager.getINSERT_QUEUE().size();
-            if (count < 512) {
+            if (count < getConfig().getInt("save.lazy-threshold")) {
                 if (RANDOM.nextInt() != 0) {
                     return;
                 }
             }
-            int save = count / 3;
-            if (save < 1000) {
-                save = 1000;
+            int save = count / getConfig().getInt("save.batch-partition-divide-by");
+            if (save < getConfig().getInt("save.min-batch-size")) {
+                save = getConfig().getInt("save.min-batch-size");
             }
             if (!LOCK.tryLock()) {
                 return;
@@ -122,7 +123,6 @@ public final class ItemVoid extends JavaPlugin {
         } else if (entity instanceof InventoryHolder inventoryHolder) {
             itemVoidManager.discover(inventoryHolder.getInventory().getContents());
         }
-
     }
 
     public void collectFromInventory(Inventory inventory) {
@@ -214,22 +214,6 @@ public final class ItemVoid extends JavaPlugin {
                 QueryGUI queryGUI = new QueryGUI(this, player, args[1], QueryMode.QUERY_LORE);
                 queryGUI.open();
             }
-            case "querylorefulltext" -> {
-                if (args.length < 2) {
-                    sender.sendMessage("请给定一个查询关键字，不支持空格");
-                    return true;
-                }
-                if (!(sender instanceof Player player)) {
-                    sender.sendMessage("只有玩家可使用此命令");
-                    return true;
-                }
-                if (args[1].length() < 4) {
-                    sender.sendMessage("错误：使用全文索引查找时，不得少于 4 个字符");
-                    return true;
-                }
-                QueryGUI queryGUI = new QueryGUI(this, player, args[1], QueryMode.QUERY_LORE_FULLTEXT);
-                queryGUI.open();
-            }
             case "forcesaveall" -> {
                 try{
                     if(!LOCK.tryLock()){
@@ -255,7 +239,7 @@ public final class ItemVoid extends JavaPlugin {
     @Override
     public List<String> onTabComplete(@NotNull CommandSender sender, @NotNull Command command, @NotNull String alias, @NotNull String[] args) {
         if (args.length < 2) {
-            return List.of("queryName", "queryLore", "queryNameFullText", "queryLoreFullText", "queryEverything", "status");
+            return List.of("queryName", "queryLore", "queryEverything", "status");
         }
         if (args.length == 3) {
             return List.of("<查询关键字，不支持空格>");

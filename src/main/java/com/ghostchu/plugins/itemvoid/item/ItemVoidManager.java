@@ -1,5 +1,6 @@
 package com.ghostchu.plugins.itemvoid.item;
 
+import com.ghostchu.plugins.itemvoid.ItemVoid;
 import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.BlockStateMeta;
@@ -11,11 +12,14 @@ import java.util.concurrent.ConcurrentLinkedDeque;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 public class ItemVoidManager implements AutoCloseable {
+    private final ItemVoid plugin;
+    private final int maxParseDepth;
     private Deque<VoidItem> INSERT_QUEUE = new ConcurrentLinkedDeque<>();
     private AtomicBoolean stopFilterThread = new AtomicBoolean(false);
-    private static int MAX_PARSE_DEPTH = 3;
 
-    public ItemVoidManager() {
+    public ItemVoidManager(ItemVoid plugin) {
+        this.plugin = plugin;
+        this.maxParseDepth = plugin.getConfig().getInt("recursive-scan-depth");
     }
 
     public void discover(ItemStack stack) {
@@ -75,7 +79,7 @@ public class ItemVoidManager implements AutoCloseable {
     }
 
     private Collection<ItemStack> parsePossibleExtraContent(ItemMeta meta, int depth) {
-        if (depth > MAX_PARSE_DEPTH) {
+        if (depth > maxParseDepth) {
             return Collections.emptyList();
         }
         try {

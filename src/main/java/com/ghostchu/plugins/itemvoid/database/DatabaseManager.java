@@ -6,6 +6,10 @@ import cc.carm.lib.easysql.hikari.HikariDataSource;
 import cc.carm.lib.easysql.manager.SQLManagerImpl;
 import com.ghostchu.plugins.itemvoid.ItemVoid;
 import org.bukkit.configuration.ConfigurationSection;
+import org.h2.Driver;
+
+import java.io.File;
+import java.io.IOException;
 
 public class DatabaseManager {
     private final ItemVoid plugin;
@@ -34,15 +38,25 @@ public class DatabaseManager {
                 this.prefix = "";
             }
             if (databaseSection.getBoolean("mysql")) {
-                databaseDriverType = DatabaseDriverType.MYSQL;
                 this.sqlManager = connectMySQL(config, databaseSection);
             } else {
-                throw new IllegalArgumentException("不支持的数据库类型");
+                this.sqlManager = connectH2(config,databaseSection);
             }
             databaseHelper = new SimpleDatabaseHelper(this.sqlManager, this.prefix);
         } catch (Exception e) {
             throw new IllegalStateException("无法初始化数据库连接，请检查数据库配置", e);
         }
+    }
+
+    private SQLManager connectH2(HikariConfig config, ConfigurationSection dbCfg) throws IOException {
+        databaseDriverType = DatabaseDriverType.H2;
+        Driver.load();
+        String driverClassName = Driver.class.getName();
+        config.setDriverClassName(driverClassName);
+        config.setJdbcUrl("jdbc:h2:" + new File(plugin.getDataFolder(), "items").getCanonicalFile().getAbsolutePath() + ";MODE=MYSQL");
+        SQLManager manager = new SQLManagerImpl(new HikariDataSource(config), "ItemVoid-SQLManager");
+        manager.executeSQL("SET MODE=MYSQL"); // Switch to MySQL mode
+        return manager;
     }
 
     private SQLManager connectMySQL(HikariConfig config, ConfigurationSection dbCfg) {
@@ -57,7 +71,7 @@ public class DatabaseManager {
         config.setJdbcUrl("jdbc:mysql://" + host + ":" + port + "/" + database + "?useSSL=" + useSSL);
         config.setUsername(user);
         config.setPassword(pass);
-        return new SQLManagerImpl(new HikariDataSource(config), "DoDoSRV-SQLManager");
+        return new SQLManagerImpl(new HikariDataSource(config), "ItemVoid-SQLManager");
     }
 
     public DatabaseDriverType getDatabaseDriverType() {
