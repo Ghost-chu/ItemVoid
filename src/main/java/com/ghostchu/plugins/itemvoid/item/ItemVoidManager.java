@@ -10,6 +10,7 @@ import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentLinkedDeque;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.stream.Collectors;
 
 public class ItemVoidManager implements AutoCloseable {
     private final ItemVoid plugin;
@@ -57,7 +58,7 @@ public class ItemVoidManager implements AutoCloseable {
                 rawPool.add(voidItem);
                 rawPool.addAll(parsePossibleExtraContent(voidItem.getItemStack().getItemMeta(), 0).stream().map(item -> new RawVoidItem(voidItem.getDiscoverAt(), item)).toList());
             }
-            return rawPool.parallelStream().filter(item -> isCollectItem(item.getItemStack())).map(BakedVoidItem::new).toList();
+            return rawPool.parallelStream().filter(item -> isCollectItem(item.getItemStack())).map(BakedVoidItem::new).collect(Collectors.toList()); // use collect for iterator
         });
     }
 
