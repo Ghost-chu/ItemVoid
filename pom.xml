@@ -6,7 +6,7 @@
 
     <groupId>com.ghostchu.plugins</groupId>
     <artifactId>ItemVoid</artifactId>
-    <version>1.4-SNAPSHOT</version>
+    <version>1.5</version>
     <packaging>jar</packaging>
 
     <name>ItemVoid</name>
@@ -50,8 +50,8 @@
                             <shadedPattern>com.ghostchu.plugins.itemvoid.shade.com.github.stefvanschie.inventoryframework.</shadedPattern>
                         </relocation>
                         <relocation>
-                            <pattern>org.h2.</pattern>
-                            <shadedPattern>com.ghostchu.plugins.itemvoid.shade.org.h2.</shadedPattern>
+                            <pattern>org.bstats.</pattern>
+                            <shadedPattern>com.ghostchu.plugins.itemvoid.shade.org.bstats.</shadedPattern>
                         </relocation>
                     </relocations>
                 </configuration>
@@ -117,6 +117,12 @@
             <groupId>com.h2database</groupId>
             <artifactId>h2</artifactId>
             <version>2.1.214</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.bstats</groupId>
+            <artifactId>bstats-bukkit</artifactId>
+            <version>3.0.2</version>
             <scope>compile</scope>
         </dependency>
     </dependencies>

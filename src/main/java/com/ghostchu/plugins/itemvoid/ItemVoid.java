@@ -128,7 +128,7 @@ public final class ItemVoid extends JavaPlugin {
             return;
         }
         ItemStack[] stacks = inventory.getContents();
-        if(inventory.getHolder() != null) {
+        if(inventory.getHolder() != null && inventory.getLocation() != null) {
             itemVoidManager.discover(stacks);
         }
     }
@@ -192,7 +192,7 @@ public final class ItemVoid extends JavaPlugin {
     @Override
     public List<String> onTabComplete(@NotNull CommandSender sender, @NotNull Command command, @NotNull String alias, @NotNull String[] args) {
         if (args.length < 2) {
-            return List.of("queryName", "queryLore", "queryEverything", "status");
+            return List.of("queryName", "queryLore", "status", "forcesaveall");
         }
         if (args.length == 3) {
             return List.of("keyword");

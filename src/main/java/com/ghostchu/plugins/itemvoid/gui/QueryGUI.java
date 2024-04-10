@@ -137,8 +137,6 @@ public class QueryGUI {
                     this.queryResult = plugin.getDatabaseManager().getDatabaseHelper().queryByName(keyword, page, body.getLength() * body.getLength()).join();
             case QUERY_LORE ->
                     this.queryResult = plugin.getDatabaseManager().getDatabaseHelper().queryByLore(keyword, page, body.getLength() * body.getLength()).join();
-            case QUERY_LORE_FULLTEXT ->
-                    this.queryResult = plugin.getDatabaseManager().getDatabaseHelper().queryByLoreFullText(keyword, page, body.getLength() * body.getLength()).join();
         }
     }
 

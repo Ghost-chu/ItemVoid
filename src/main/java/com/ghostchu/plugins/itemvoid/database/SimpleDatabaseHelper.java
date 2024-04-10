@@ -9,10 +9,7 @@ import com.google.common.cache.CacheBuilder;
 import org.bukkit.configuration.InvalidConfigurationException;
 
 import java.sql.*;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Iterator;
-import java.util.List;
+import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 
@@ -57,8 +54,8 @@ public class SimpleDatabaseHelper {
                         preparedStatement.setLong(1, voidItem.getSha256());
                         preparedStatement.setTimestamp(2, new Timestamp(voidItem.getDiscoverAt()));
                         preparedStatement.setString(3, voidItem.getMaterial());
-                        preparedStatement.setString(4, voidItem.getName());
-                        preparedStatement.setString(5, voidItem.getLore());
+                        preparedStatement.setString(4, voidItem.getName().toLowerCase(Locale.ROOT));
+                        preparedStatement.setString(5, voidItem.getLore().toLowerCase(Locale.ROOT));
                         preparedStatement.setString(6, voidItem.getNbt());
                         preparedStatement.setString(7, voidItem.getBukkitSerialized());
                         preparedStatement.addBatch();
@@ -73,10 +70,11 @@ public class SimpleDatabaseHelper {
     }
 
     public CompletableFuture<Collection<DatabaseItem>> queryByName(String keyword, int page, int pageSize) {
+        final String keywordCpy = keyword.toLowerCase(Locale.ROOT);
         return CompletableFuture.supplyAsync(() -> {
             List<DatabaseItem> stackList = new ArrayList<>();
             try (SQLQuery query = DataTables.ITEMS.createQuery()
-                    .addCondition("name", "LIKE", "%" + keyword + "%")
+                    .addCondition("name", "LIKE","*".equals(keywordCpy) ? "%" : "%" + keywordCpy + "%")
                     .orderBy("discover_at", false)
                     .setPageLimit((page - 1) * pageSize, pageSize)
                     .build().execute();
@@ -103,10 +101,11 @@ public class SimpleDatabaseHelper {
     }
 
     public CompletableFuture<Collection<DatabaseItem>> queryByLore(String keyword, int page, int pageSize) {
+       String keywordCpy = keyword.toLowerCase(Locale.ROOT);
         return CompletableFuture.supplyAsync(() -> {
             List<DatabaseItem> stackList = new ArrayList<>();
             try (SQLQuery query = DataTables.ITEMS.createQuery()
-                    .addCondition("lore", "LIKE", "%" + keyword + "%")
+                    .addCondition("lore", "LIKE",  "*".equals(keywordCpy) ? "%" : "%" + keywordCpy + "%")
                     .orderBy("discover_at", false)
                     .setPageLimit((page - 1) * pageSize, pageSize)
                     .build().execute();
@@ -131,38 +130,4 @@ public class SimpleDatabaseHelper {
             return stackList;
         });
     }
-
-
-    public CompletableFuture<Collection<DatabaseItem>> queryByLoreFullText(String keyword, int page, int pageSize) {
-        return CompletableFuture.supplyAsync(() -> {
-            List<DatabaseItem> stackList = new ArrayList<>();
-            int startPos = (pageSize - 1) * pageSize;
-            String SQL = "SELECT * FROM " + DataTables.ITEMS.getName() + " WHERE MATCH (`lore`) AGAINST (?) ORDER BY `discover_at` DESC LIMIT " + startPos + "," + pageSize;
-            try (Connection connection = sqlManager.getConnection()) {
-                try (PreparedStatement preparedStatement = connection.prepareStatement(SQL)) {
-                    preparedStatement.setString(1, keyword);
-                    try (ResultSet set = preparedStatement.executeQuery()) {
-                        while (set.next()) {
-                            try {
-                                long hashSha256 = set.getLong("hash_sha256");
-                                Timestamp discoverAt = set.getTimestamp("discover_at");
-                                String material = set.getString("material");
-                                String name = set.getString("name");
-                                String lore = set.getString("lore");
-                                String nbt = set.getString("nbt");
-                                String bukkitYaml = set.getString("bukkit_yaml");
-                                stackList.add(new DatabaseItem(discoverAt.getTime(), hashSha256, name, lore, nbt, bukkitYaml, material));
-                            } catch (InvalidConfigurationException e) {
-                                e.printStackTrace();
-                            }
-                        }
-                    }
-                }
-            } catch (SQLException e) {
-                e.printStackTrace();
-            }
-            return stackList;
-        });
-    }
-
 }

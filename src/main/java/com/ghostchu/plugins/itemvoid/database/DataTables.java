@@ -52,7 +52,7 @@ public enum DataTables {
         this.prefix = tablePrefix;
 
         TableCreateBuilder tableBuilder = sqlManager.createTable(this.getName());
-        String newSettings = "ENGINE=InnoDB DEFAULT CHARSET=utf8mb4";
+        String newSettings = "ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8_general_ci"; // case insensitive
         tableBuilder.setTableSettings(newSettings);
         tableHandler.accept(tableBuilder);
         tableBuilder.build().execute();
