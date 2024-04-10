@@ -14,6 +14,8 @@ ItemVoid will collect the items which have custom name or custom lores, and stor
 
 You can take out items from query result GUI when you need.
 
+The plugin is heavily optimized for performance, all discovered items will be inserted into the queue waiting for asynchronous processing in the shortest possible code path, and it has been stress-tested in RIA's production environment with over 150+ online players and 60,000+ custom items. Spark shows that ItemVoid has no noticeable impact on server performance, cheers!
+
 <img width="813" alt="304310349-129a4b19-d953-4169-a722-29dadfae9834" src="https://github.com/Ghost-chu/ItemVoid/assets/30802565/f9052d4c-f64b-4d03-936c-7d93caa60e4e">
 
 ## Permission
