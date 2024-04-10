@@ -2,6 +2,8 @@
 
 Item VoidHopper, collecting everything!
 
+[[Download from Modrinth]](https://modrinth.com/plugin/itemvoid-plugin)
+
 ## Dependencies
 
 * [NBTAPI](https://modrinth.com/plugin/nbtapi)
