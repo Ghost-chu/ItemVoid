@@ -36,7 +36,7 @@ public class QueryGUI {
         this.player = player;
         this.keyword = keyword;
         this.queryMode = queryMode;
-        this.chestGui = new ChestGui(6, "查询结果: " + keyword);
+        this.chestGui = new ChestGui(6, "Query Result: " + keyword);
         this.body = new OutlinePane(0, 0, 9, 5);
         this.footer = new StaticPane(0, 5, 9, 1);
         chestGui.addPane(body);
@@ -74,7 +74,7 @@ public class QueryGUI {
                 event.setCancelled(true);
                 player.getInventory().addItem(record.getItemStack());
                 player.playSound(player, Sound.UI_BUTTON_CLICK, 1F, 1F);
-                player.sendMessage(ChatColor.GREEN + "已添加到物品栏（如果没加上，请检查背包空间）");
+                player.sendMessage(ChatColor.GREEN + "Item has been added to your inventory");
             }));
         }
     }
@@ -91,9 +91,9 @@ public class QueryGUI {
         ItemStack previousPage = new ItemStack(Material.PAPER);
         ItemStack currentPage = new ItemStack(Material.BOOK);
         ItemStack nextPage = new ItemStack(Material.PAPER);
-        setItemStackName(previousPage, "<<上一页");
-        setItemStackName(currentPage, "当前页：" + page);
-        setItemStackName(nextPage, "下一页>>");
+        setItemStackName(previousPage, "<<Previous page");
+        setItemStackName(currentPage, "Current page：" + page);
+        setItemStackName(nextPage, "Next page>>");
         currentPage.setAmount(Math.min(1, Math.max(page, currentPage.getMaxStackSize())));
         footer.addItem(new GuiItem(previousPage, e -> {
             e.setResult(Event.Result.DENY);
@@ -113,7 +113,7 @@ public class QueryGUI {
 
     private ItemStack noResultPlaceHolderItem() {
         ItemStack querying = new ItemStack(Material.GRAY_STAINED_GLASS_PANE);
-        setItemStackName(querying, ChatColor.GRAY + "无结果");
+        setItemStackName(querying, ChatColor.GRAY + "No result");
         return querying;
     }
 
@@ -126,7 +126,7 @@ public class QueryGUI {
 
     private ItemStack queryingPlaceHolderItem() {
         ItemStack stack = new ItemStack(Material.BARRIER);
-        setItemStackName(stack, ChatColor.YELLOW + "查询中，请等待...");
+        setItemStackName(stack, ChatColor.YELLOW + "Querying...");
         return stack;
     }
 

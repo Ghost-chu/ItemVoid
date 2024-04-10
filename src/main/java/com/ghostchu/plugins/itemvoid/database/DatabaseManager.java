@@ -30,7 +30,7 @@ public class DatabaseManager {
             throw new RuntimeException(e);
         }
         ConfigurationSection databaseSection = plugin.getConfig().getConfigurationSection("database");
-        if (databaseSection == null) throw new IllegalArgumentException("Database section 不能为空");
+        if (databaseSection == null) throw new IllegalArgumentException("Database section cannot be null");
         HikariConfig config = HikariUtil.createHikariConfig(databaseSection.getConfigurationSection("properties"));
         try {
             this.prefix = databaseSection.getString("prefix");
@@ -44,7 +44,7 @@ public class DatabaseManager {
             }
             databaseHelper = new SimpleDatabaseHelper(this.sqlManager, this.prefix);
         } catch (Exception e) {
-            throw new IllegalStateException("无法初始化数据库连接，请检查数据库配置", e);
+            throw new IllegalStateException("Unable to connect to database, please check database configuration", e);
         }
     }
 

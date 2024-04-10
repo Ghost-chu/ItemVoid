@@ -6,7 +6,6 @@ import com.ghostchu.plugins.itemvoid.gui.QueryGUI;
 import com.ghostchu.plugins.itemvoid.gui.QueryMode;
 import com.ghostchu.plugins.itemvoid.item.ItemVoidManager;
 import com.ghostchu.plugins.itemvoid.listener.InventoryListener;
-import com.google.common.collect.ImmutableSet;
 import org.bukkit.Bukkit;
 import org.bukkit.Chunk;
 import org.bukkit.block.BlockState;
@@ -23,7 +22,10 @@ import org.bukkit.plugin.java.JavaPlugin;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.*;
+import java.util.Collections;
+import java.util.List;
+import java.util.Locale;
+import java.util.Random;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
@@ -31,7 +33,6 @@ import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
 public final class ItemVoid extends JavaPlugin {
-    private static Set<InventoryType> COMPLEX_SEARCH_INVENTORY = ImmutableSet.of(InventoryType.CHEST);
     private DatabaseManager databaseManager;
     private ItemVoidManager itemVoidManager;
     private final Random RANDOM = new Random();
@@ -138,17 +139,17 @@ public final class ItemVoid extends JavaPlugin {
             return false;
         }
         if (args.length < 1) {
-            sender.sendMessage("请给定一个查询参数：queryName, queryLore, status");
+            sender.sendMessage("Please given a query arugments：queryName, queryLore, status");
             return false;
         }
         switch (args[0].toLowerCase(Locale.ROOT)) {
             case "queryname" -> {
                 if (args.length < 2) {
-                    sender.sendMessage("请给定一个查询关键字，不支持空格");
+                    sender.sendMessage("Please give a query keyword, no space.");
                     return true;
                 }
                 if (!(sender instanceof Player player)) {
-                    sender.sendMessage("只有玩家可使用此命令");
+                    sender.sendMessage("Only player can do this");
                     return true;
                 }
                 QueryGUI queryGUI = new QueryGUI(this, player, args[1], QueryMode.QUERY_NAME);
@@ -156,11 +157,11 @@ public final class ItemVoid extends JavaPlugin {
             }
             case "querylore" -> {
                 if (args.length < 2) {
-                    sender.sendMessage("请给定一个查询关键字，不支持空格");
+                    sender.sendMessage("Please give a query keyword, no space.");
                     return true;
                 }
                 if (!(sender instanceof Player player)) {
-                    sender.sendMessage("只有玩家可使用此命令");
+                    sender.sendMessage("Only player can do this");
                     return true;
                 }
                 QueryGUI queryGUI = new QueryGUI(this, player, args[1], QueryMode.QUERY_LORE);
@@ -169,12 +170,12 @@ public final class ItemVoid extends JavaPlugin {
             case "forcesaveall" -> {
                 try{
                     if(!LOCK.tryLock()){
-                        sender.sendMessage("已经有一个保存任务在进行中了！");
+                        sender.sendMessage("Already have a save task running!");
                         return true;
                     }
                     itemVoidManager.pollItems(-1)
                             .thenAccept(bakedVoidItems -> databaseManager.getDatabaseHelper().saveItems(bakedVoidItems)
-                                    .thenAccept((e) -> sender.sendMessage("保存完成！ long[] = " + e.length)));
+                                    .thenAccept((e) -> sender.sendMessage("Saved！ long[] = " + e.length)));
                 }catch (Throwable throwable){
                     throwable.printStackTrace();
                 }finally {
@@ -194,7 +195,7 @@ public final class ItemVoid extends JavaPlugin {
             return List.of("queryName", "queryLore", "queryEverything", "status");
         }
         if (args.length == 3) {
-            return List.of("<查询关键字，不支持空格>");
+            return List.of("keyword");
         }
         return Collections.emptyList();
     }
