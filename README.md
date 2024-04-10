@@ -24,5 +24,5 @@ You can take out items from query result GUI when you need.
 
 /itemvoid queryName <name> - Search by name  
 /itemvoid queryLore <lore> - Search by lores 
-/itemvoid status - Check save queue status
+/itemvoid status - Check save queue status  
 /itemvoid forcesaveall - Flush all items that pending to save from memory to database for search 
