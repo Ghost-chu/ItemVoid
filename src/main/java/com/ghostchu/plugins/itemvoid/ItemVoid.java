@@ -86,7 +86,7 @@ public final class ItemVoid extends JavaPlugin {
             } catch (InterruptedException | ExecutionException | TimeoutException e) {
                 e.printStackTrace();
             }
-        });
+        }).join();
         EasySQL.shutdownManager(getDatabaseManager().getSqlManager());
     }
 
