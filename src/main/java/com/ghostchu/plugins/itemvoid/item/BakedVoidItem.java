@@ -1,7 +1,7 @@
 package com.ghostchu.plugins.itemvoid.item;
 
 import com.google.common.hash.Hashing;
-import de.tr7zw.nbtapi.NBTItem;
+import de.tr7zw.nbtapi.NBT;
 import org.bukkit.ChatColor;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.inventory.ItemStack;
@@ -102,8 +102,7 @@ public class BakedVoidItem extends AbstractVoidItem {
     }
 
     private void serializeItemStack() {
-        NBTItem nbtItem = new NBTItem(stack);
-        nbt = nbtItem.toString();
+        nbt = NBT.itemStackToNBT(stack).toString();
         YamlConfiguration yaml = new YamlConfiguration();
         yaml.set("item",stack);
         bukkitSerialized = yaml.saveToString();
