@@ -6,6 +6,7 @@ import com.ghostchu.plugins.itemvoid.gui.QueryGUI;
 import com.ghostchu.plugins.itemvoid.gui.QueryMode;
 import com.ghostchu.plugins.itemvoid.item.ItemVoidManager;
 import com.ghostchu.plugins.itemvoid.listener.InventoryListener;
+import org.bstats.bukkit.Metrics;
 import org.bukkit.Bukkit;
 import org.bukkit.Chunk;
 import org.bukkit.block.BlockState;
@@ -13,11 +14,10 @@ import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.ItemFrame;
+import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.InventoryType;
-import org.bukkit.inventory.Inventory;
-import org.bukkit.inventory.InventoryHolder;
-import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.*;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -71,6 +71,7 @@ public final class ItemVoid extends JavaPlugin {
                 LOCK.unlock();
             }
         }, 1, 20);
+        Metrics metrics = new Metrics(this, 21560);
     }
 
     public DatabaseManager getDatabaseManager() {
@@ -120,6 +121,15 @@ public final class ItemVoid extends JavaPlugin {
             itemVoidManager.discover(itemFrame.getItem());
         } else if (entity instanceof InventoryHolder inventoryHolder) {
             itemVoidManager.discover(inventoryHolder.getInventory().getContents());
+        } else if(entity instanceof LivingEntity livingEntity){
+            EntityEquipment equipment = livingEntity.getEquipment();
+            if(equipment != null){
+                itemVoidManager.discover(equipment.getArmorContents());
+                for (EquipmentSlot value : EquipmentSlot.values()) {
+                    itemVoidManager.discover(equipment.getItem(value));
+                }
+            }
+
         }
     }
 

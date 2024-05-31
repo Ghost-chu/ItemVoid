@@ -26,6 +26,7 @@ public class ItemVoidManager implements AutoCloseable {
     public void discover(ItemStack stack) {
         if (stack == null) return;
         if (!stack.hasItemMeta()) return;
+        if (stack.getType().isAir()) return;
         INSERT_QUEUE.offer(new RawVoidItem(System.currentTimeMillis(), stack));
     }
 
