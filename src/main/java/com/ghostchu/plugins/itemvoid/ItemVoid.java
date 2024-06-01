@@ -33,11 +33,10 @@ import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
 public final class ItemVoid extends JavaPlugin {
-    private DatabaseManager databaseManager;
-    private ItemVoidManager itemVoidManager;
     private final Random RANDOM = new Random();
     private final Lock LOCK = new ReentrantLock();
-
+    private DatabaseManager databaseManager;
+    private ItemVoidManager itemVoidManager;
 
     @Override
     public void onEnable() {
@@ -117,19 +116,21 @@ public final class ItemVoid extends JavaPlugin {
         if (entity instanceof Player player) {
             itemVoidManager.discover(player.getInventory());
             itemVoidManager.discover(player.getEnderChest());
-        } else if (entity instanceof ItemFrame itemFrame) {
+        }
+        if (entity instanceof ItemFrame itemFrame) {
             itemVoidManager.discover(itemFrame.getItem());
-        } else if (entity instanceof InventoryHolder inventoryHolder) {
+        }
+        if (entity instanceof InventoryHolder inventoryHolder) {
             itemVoidManager.discover(inventoryHolder.getInventory().getContents());
-        } else if(entity instanceof LivingEntity livingEntity){
+        }
+        if (entity instanceof LivingEntity livingEntity) {
             EntityEquipment equipment = livingEntity.getEquipment();
-            if(equipment != null){
+            if (equipment != null) {
                 itemVoidManager.discover(equipment.getArmorContents());
                 for (EquipmentSlot value : EquipmentSlot.values()) {
                     itemVoidManager.discover(equipment.getItem(value));
                 }
             }
-
         }
     }
 
@@ -138,7 +139,7 @@ public final class ItemVoid extends JavaPlugin {
             return;
         }
         ItemStack[] stacks = inventory.getContents();
-        if(inventory.getHolder() != null && inventory.getLocation() != null) {
+        if (inventory.getHolder() != null && inventory.getLocation() != null) {
             itemVoidManager.discover(stacks);
         }
     }
@@ -178,17 +179,17 @@ public final class ItemVoid extends JavaPlugin {
                 queryGUI.open();
             }
             case "forcesaveall" -> {
-                try{
-                    if(!LOCK.tryLock()){
+                try {
+                    if (!LOCK.tryLock()) {
                         sender.sendMessage("Already have a save task running!");
                         return true;
                     }
                     itemVoidManager.pollItems(-1)
                             .thenAccept(bakedVoidItems -> databaseManager.getDatabaseHelper().saveItems(bakedVoidItems)
                                     .thenAccept((e) -> sender.sendMessage("Saved！ long[] = " + e.length)));
-                }catch (Throwable throwable){
+                } catch (Throwable throwable) {
                     throwable.printStackTrace();
-                }finally {
+                } finally {
                     LOCK.unlock();
                 }
             }
