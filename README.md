@@ -28,5 +28,6 @@ The plugin is heavily optimized for performance, all discovered items will be in
 
 /itemvoid queryName <name> - Search by name  
 /itemvoid queryLore <lore> - Search by lores 
+/itemvoid queryMaterial <material bukkit name> - Seatch by Material name  
 /itemvoid status - Check save queue status  
 /itemvoid forcesaveall - Flush all items that pending to save from memory to database for search 
