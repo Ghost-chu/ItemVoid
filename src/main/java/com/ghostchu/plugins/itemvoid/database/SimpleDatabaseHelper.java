@@ -69,6 +69,37 @@ public class SimpleDatabaseHelper {
         });
     }
 
+    public CompletableFuture<Collection<DatabaseItem>> queryByMaterial(String keyword, int page, int pageSize) {
+        final String keywordCpy = keyword.toLowerCase(Locale.ROOT);
+        return CompletableFuture.supplyAsync(() -> {
+            List<DatabaseItem> stackList = new ArrayList<>();
+            try (SQLQuery query = DataTables.ITEMS.createQuery()
+                    .addCondition("material", "LIKE","*".equals(keywordCpy) ? "%" : "%" + keywordCpy + "%")
+                    .orderBy("discover_at", false)
+                    .setPageLimit((page - 1) * pageSize, pageSize)
+                    .build().execute();
+                 ResultSet set = query.getResultSet()) {
+                while (set.next()) {
+                    try {
+                        long hashSha256 = set.getLong("hash_sha256");
+                        Timestamp discoverAt = set.getTimestamp("discover_at");
+                        String material = set.getString("material");
+                        String name = set.getString("name");
+                        String lore = set.getString("lore");
+                        String nbt = set.getString("nbt");
+                        String bukkitYaml = set.getString("bukkit_yaml");
+                        stackList.add(new DatabaseItem(discoverAt.getTime(), hashSha256, name, lore, nbt, bukkitYaml, material));
+                    } catch (InvalidConfigurationException e) {
+                        e.printStackTrace();
+                    }
+                }
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+            return stackList;
+        });
+    }
+
     public CompletableFuture<Collection<DatabaseItem>> queryByName(String keyword, int page, int pageSize) {
         final String keywordCpy = keyword.toLowerCase(Locale.ROOT);
         return CompletableFuture.supplyAsync(() -> {

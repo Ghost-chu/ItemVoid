@@ -154,6 +154,18 @@ public final class ItemVoid extends JavaPlugin {
             return false;
         }
         switch (args[0].toLowerCase(Locale.ROOT)) {
+            case "querymaterial" -> {
+                if (args.length < 2) {
+                    sender.sendMessage("Please give a query material, no space.");
+                    return true;
+                }
+                if (!(sender instanceof Player player)) {
+                    sender.sendMessage("Only player can do this");
+                    return true;
+                }
+                QueryGUI queryGUI = new QueryGUI(this, player, args[1], QueryMode.QUERY_MATERIAL);
+                queryGUI.open();
+            }
             case "queryname" -> {
                 if (args.length < 2) {
                     sender.sendMessage("Please give a query keyword, no space.");
